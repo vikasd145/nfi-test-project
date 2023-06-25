@@ -37,4 +37,4 @@ COPY --from=build /app/bin .
 EXPOSE 8080
 
 # Set the entry point for the container
-CMD ["./server"]
+CMD ["./nfi-test-project"]

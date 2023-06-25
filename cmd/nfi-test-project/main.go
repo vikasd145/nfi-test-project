@@ -31,7 +31,7 @@ func main() {
 	var config Config
 
 	// Load configuration from file
-	viper.SetConfigFile("../configs/config.yaml")
+	viper.SetConfigFile("../../configs/config.yaml")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Failed to read configuration file:", err)
 	}
