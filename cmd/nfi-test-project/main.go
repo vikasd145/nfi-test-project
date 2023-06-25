@@ -42,11 +42,15 @@ func main() {
 	if err := viper.Unmarshal(&config); err != nil {
 		log.Fatal("Failed to unmarshal configuration:", err)
 	}
+	dataSourceName := fmt.Sprintf(
+		"postgres://%v:%v@%v/%v?sslmode=disable",
+		config.Database.User,
+		config.Database.Password,
+		"postgres:5432",
+		config.Database.DBName,
+	)
 	// Connect to the database
-	db, err := sqlx.Connect("postgres", fmt.Sprintf(
-		"user=%s password=%s dbname=%s sslmode=disable",
-		config.Database.User, config.Database.Password, config.Database.DBName,
-	))
+	db, err := sqlx.Connect("postgres", dataSourceName)
 	if err != nil {
 		log.Fatal("Failed to connect to the database:", err)
 	}
