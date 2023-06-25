@@ -29,7 +29,7 @@ func NewUserRepository(db *sqlx.DB) UserRepository {
 
 func (r *userRepository) CreateUser() (int, error) {
 	var userID int
-	err := r.db.QueryRow("INSERT INTO users (balance) VALUES (0) RETURNING id").Scan(&userID)
+	err := r.db.QueryRow("INSERT INTO user_transaction (balance) VALUES (0) RETURNING id").Scan(&userID)
 	if err != nil {
 		return 0, err
 	}
@@ -41,7 +41,7 @@ func (r *userRepository) CreateUser() (int, error) {
 // transaction or transaction timeout
 func (r *userRepository) GetUserByID(userID int) (*User, error) {
 	user := &User{}
-	err := r.db.Get(user, "SELECT * FROM users WHERE id = $1", userID)
+	err := r.db.Get(user, "SELECT * FROM user_transaction WHERE id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -54,19 +54,28 @@ func (r *userRepository) UpdateUserBalance(userID int, amount float64) (float64,
 		return 0, err
 	}
 	defer tx.Rollback()
-	// To acquire lock for this row
+
+	// Acquire lock for the row
 	user := &User{}
-	err = tx.Get(user, "SELECT * FROM users WHERE id = $1 FOR UPDATE", userID)
+	err = tx.Get(user, "SELECT * FROM user_transaction WHERE id = $1 FOR UPDATE", userID)
 	if err != nil {
 		return 0, err
 	}
+
 	if amount < 0 && user.Balance < math.Abs(amount) {
 		return user.Balance, fmt.Errorf("insufficient balance")
 	}
-	_, err = r.db.Exec("UPDATE users SET balance = $1 WHERE id = $2", user.Balance+amount, userID)
+
+	newBalance := user.Balance + amount
+	_, err = tx.Exec("UPDATE user_transaction SET balance = $1 WHERE id = $2", newBalance, userID)
 	if err != nil {
-		tx.Commit()
 		return user.Balance, err
 	}
-	return user.Balance, err
+
+	err = tx.Commit()
+	if err != nil {
+		return user.Balance, err
+	}
+
+	return newBalance, nil
 }
