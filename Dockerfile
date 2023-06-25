@@ -1,6 +1,9 @@
 # Start from a minimal base image with Go installed
 FROM golang:1.18.6-alpine AS build
 
+# Install build tools
+RUN apk add --no-cache build-base
+
 # Set the working directory inside the container
 WORKDIR /app
 
@@ -13,8 +16,13 @@ RUN go mod download
 # Copy the rest of the application source code
 COPY . .
 
-# Build the Go application
-RUN go build -o server .
+# Run the test cases
+RUN go test -v ./...
+
+RUN mkdir -p bin
+
+# Build the Go application if tests pass
+RUN go build -o bin ./...
 
 # Start from a new minimal base image
 FROM alpine:latest
@@ -23,10 +31,10 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy the built Go binary from the previous stage
-COPY --from=build /app/server .
+COPY --from=build /app/bin .
 
 # Expose the port on which the server listens
 EXPOSE 8080
 
 # Set the entry point for the container
-ENTRYPOINT ["./server"]
+CMD ["./server"]

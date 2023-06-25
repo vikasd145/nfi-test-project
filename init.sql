@@ -3,4 +3,4 @@ CREATE TABLE IF NOT EXISTS user_transaction (
                 balance DOUBLE PRECISION
 );
 
-CREATE INDEX idx_user_transaction_id ON user_transaction (id);
+CREATE INDEX IF NOT EXISTS idx_user_transaction_id ON user_transaction (id);
