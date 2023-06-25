@@ -20,13 +20,12 @@ func NewTransactionService(userRepository repository.UserRepository) Transaction
 }
 
 func (s *transactionService) Deposit(userID int, amount float64) (float64, error) {
-	user, err := s.userRepository.GetUserByID(userID)
+	// In real world, we should check if the user exists or not.
+	_, err := s.userRepository.GetUserByID(userID)
 	if err != nil {
 		return 0, err
 	}
-
-	newBalance := user.Balance + amount
-	err = s.userRepository.UpdateUserBalance(userID, newBalance)
+	newBalance, err := s.userRepository.UpdateUserBalance(userID, amount)
 	if err != nil {
 		return 0, err
 	}
@@ -35,17 +34,11 @@ func (s *transactionService) Deposit(userID int, amount float64) (float64, error
 }
 
 func (s *transactionService) Withdraw(userID int, amount float64) (float64, error) {
-	user, err := s.userRepository.GetUserByID(userID)
+	_, err := s.userRepository.GetUserByID(userID)
 	if err != nil {
 		return 0, err
 	}
-
-	if amount > user.Balance {
-		return user.Balance, nil
-	}
-
-	newBalance := user.Balance - amount
-	err = s.userRepository.UpdateUserBalance(userID, newBalance)
+	newBalance, err := s.userRepository.UpdateUserBalance(userID, -amount)
 	if err != nil {
 		return 0, err
 	}

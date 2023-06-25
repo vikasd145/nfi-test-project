@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 	httpHandlers "github.com/vikasd145/nfi-test-project/pkg/http-handlers"
 	"github.com/vikasd145/nfi-test-project/pkg/repository"
 	"github.com/vikasd145/nfi-test-project/pkg/service"
 	"log"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -31,7 +31,9 @@ func main() {
 	var config Config
 
 	// Load configuration from file
-	viper.SetConfigFile("../configs/config.yaml")
+	viper.AddConfigPath("./configs")
+	viper.SetConfigType("yaml")
+	viper.SetConfigName("config")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Failed to read configuration file:", err)
 	}
@@ -61,7 +63,7 @@ func main() {
 	transactionService := service.NewTransactionService(userRepository)
 
 	router := gin.Default()
-
+	//gin.SetMode(gin.ReleaseMode)
 	httpHandlers.RegisterHandlers(router, userService, transactionService)
 
 	addr := fmt.Sprintf(":%d", config.Server.Port)
