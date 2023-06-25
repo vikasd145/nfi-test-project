@@ -32,6 +32,7 @@ func main() {
 
 	// Load configuration from file
 	viper.AddConfigPath("./configs")
+	viper.AddConfigPath(".")
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	if err := viper.ReadInConfig(); err != nil {
@@ -41,11 +42,9 @@ func main() {
 	if err := viper.Unmarshal(&config); err != nil {
 		log.Fatal("Failed to unmarshal configuration:", err)
 	}
-
 	// Connect to the database
 	db, err := sqlx.Connect("postgres", fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		config.Database.Host, config.Database.Port,
+		"user=%s password=%s dbname=%s sslmode=disable",
 		config.Database.User, config.Database.Password, config.Database.DBName,
 	))
 	if err != nil {

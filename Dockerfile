@@ -32,6 +32,7 @@ WORKDIR /app
 
 # Copy the built Go binary from the previous stage
 COPY --from=build /app/bin .
+COPY --from=build /app/configs/config.yaml config.yaml
 
 # Expose the port on which the server listens
 EXPOSE 8080
